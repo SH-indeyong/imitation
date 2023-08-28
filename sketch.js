@@ -55,9 +55,11 @@ class Particle {
         this.position = createVector(x, y);
         this.velocity = createVector(random(-1, 1), random(-1, 1));
         this.acceleration = createVector(0, 0.05);
-        this.radius = 5;
+        this.size = random(1, 5);
         this.alpha = 255;
-        this.fadeSpeed = 255 / 3;
+        this.fadeSpeed = random(1, 3);
+
+        this.color = color(random(200, 255), random(100, 200), random(200, 255)); // 핑크색 계열 설정
     }
 
     update() {
@@ -68,9 +70,9 @@ class Particle {
     }
 
     display() {
-        fill(255, 0, 0, this.alpha);
+        fill(this.color.levels[0], this.color.levels[1], this.color.levels[2], this.alpha);
         noStroke();
-        ellipse(this.position.x, this.position.y, this.radius * 2, this.radius * 2);
+        ellipse(this.position.x, this.position.y, this.size * 2, this.size * 2);
     }
 
     isFaded() {
