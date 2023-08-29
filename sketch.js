@@ -4,6 +4,10 @@ let currentPoses = [];
 let particles = [];
 const numParticles = 300;
 
+const baseColors = [
+    [244, 227, 219], [239, 154, 154], [237, 230, 197], [237, 230, 197], [230, 130, 230]
+];
+
 function setup() {
     createCanvas(640, 480);
     video = createCapture(VIDEO);
@@ -65,7 +69,7 @@ function draw() {
         const pose = currentPoses[i].pose;
         if (pose.keypoints.length > 0) {
             // 모든 키포인트에서 파티클 생성
-            for (let j = 0; j < pose.keypoints.length; j++) {
+            for (let j = 3; j < pose.keypoints.length; j++) {
                 const keypoint = pose.keypoints[j];
                 if (keypoint.score > 0.05) {
                     particles.push(new Particle(keypoint.position.x, keypoint.position.y));
@@ -89,18 +93,25 @@ class Particle {
     constructor(x, y) {
         this.position = createVector(x, y);
         this.velocity = createVector(random(-1, 1), random(-1, 1));
-        this.acceleration = createVector(0, 0.05);
+        // this.acceleration = createVector(0, 0.05);
         this.size = random(1, 5);
         this.alpha = 255;
         this.fadeSpeed = random(1, 5);
 
-        this.color = color(random(200, 255), random(100, 200), random(200, 255)); // 핑크색 계열 설정
+        const baseColor = baseColors[Math.floor(random(baseColors.length))];
+
+        // 색상 조절
+        const r = baseColor[0] + random(-20, 20);
+        const g = baseColor[1] + random(-20, 20);
+        const b = baseColor[2] + random(-20, 20);
+
+        this.color = color(r, g, b);
     }
 
     update() {
-        this.velocity.add(this.acceleration);
+        // this.velocity.add(this.acceleration);
         this.position.add(this.velocity);
-        this.alpha -= this.fadeSpeed * deltaTime / 500;
+        this.alpha -= this.fadeSpeed * deltaTime / 50;
         this.alpha = constrain(this.alpha, 0, 255);
     }
 
