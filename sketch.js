@@ -27,15 +27,23 @@ function draw() {
         const pose = currentPoses[i].pose;
         if (pose.keypoints.length > 0) {
             // 손목과 발목의 위치 가져오기
-            const wrist = pose.keypoints[9]; // 9번은 왼쪽 손목, 10번은 오른쪽 손목
-            const ankle = pose.keypoints[15]; // 15번은 왼쪽 발목, 16번은 오른쪽 발목
+            const leftWrist = pose.keypoints[9];        // 9번은 왼쪽 손목
+            const rightWrist = pose.keypoints[10];      // 10번은 오른쪽 손목
+            const leftAnkle = pose.keypoints[15];       // 15번은 왼쪽 발목
+            const rightAnkle = pose.keypoints[16];      // 16번은 오른쪽 발목
 
             // 파티클 생성
-            if (wrist.score > 0.2) {
-                particles.push(new Particle(wrist.position.x, wrist.position.y));
+            if (leftWrist.score > 0.05) {
+                particles.push(new Particle(leftWrist.position.x, leftWrist.position.y));
             }
-            if (ankle.score > 0.2) {
-                particles.push(new Particle(ankle.position.x, ankle.position.y));
+            if (rightWrist.score > 0.05) {
+                particles.push(new Particle(rightWrist.position.x, rightWrist.position.y));
+            }
+            if (leftAnkle.score > 0.05) {
+                particles.push(new Particle(leftAnkle.position.x, leftAnkle.position.y));
+            }
+            if (rightAnkle.score > 0.05) {
+                particles.push(new Particle(rightAnkle.position.x, rightAnkle.position.y));
             }
         }
     }
