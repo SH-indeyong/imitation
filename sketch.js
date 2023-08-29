@@ -20,30 +20,56 @@ function onPoseDetected(poses) {
     currentPoses = poses;
 }
 
+// function draw() {
+//     image(video, 0, 0, width, height);
+
+//     for (let i = 0; i < currentPoses.length; i++) {
+//         const pose = currentPoses[i].pose;
+//         if (pose.keypoints.length > 0) {
+//             // 손목과 발목의 위치 가져오기
+//             const leftWrist = pose.keypoints[9];        // 9번은 왼쪽 손목
+//             const rightWrist = pose.keypoints[10];      // 10번은 오른쪽 손목
+//             const leftAnkle = pose.keypoints[15];       // 15번은 왼쪽 발목
+//             const rightAnkle = pose.keypoints[16];      // 16번은 오른쪽 발목
+
+//             // 파티클 생성
+//             if (leftWrist.score > 0.05) {
+//                 particles.push(new Particle(leftWrist.position.x, leftWrist.position.y));
+//             }
+//             if (rightWrist.score > 0.05) {
+//                 particles.push(new Particle(rightWrist.position.x, rightWrist.position.y));
+//             }
+//             if (leftAnkle.score > 0.05) {
+//                 particles.push(new Particle(leftAnkle.position.x, leftAnkle.position.y));
+//             }
+//             if (rightAnkle.score > 0.05) {
+//                 particles.push(new Particle(rightAnkle.position.x, rightAnkle.position.y));
+//             }
+//         }
+//     }
+
+//     for (let i = particles.length - 1; i >= 0; i--) {
+//         let p = particles[i];
+//         p.update();
+//         p.display();
+//         if (p.isFaded()) {
+//             particles.splice(i, 1);
+//         }
+//     }
+// }
+
 function draw() {
     image(video, 0, 0, width, height);
 
     for (let i = 0; i < currentPoses.length; i++) {
         const pose = currentPoses[i].pose;
         if (pose.keypoints.length > 0) {
-            // 손목과 발목의 위치 가져오기
-            const leftWrist = pose.keypoints[9];        // 9번은 왼쪽 손목
-            const rightWrist = pose.keypoints[10];      // 10번은 오른쪽 손목
-            const leftAnkle = pose.keypoints[15];       // 15번은 왼쪽 발목
-            const rightAnkle = pose.keypoints[16];      // 16번은 오른쪽 발목
-
-            // 파티클 생성
-            if (leftWrist.score > 0.05) {
-                particles.push(new Particle(leftWrist.position.x, leftWrist.position.y));
-            }
-            if (rightWrist.score > 0.05) {
-                particles.push(new Particle(rightWrist.position.x, rightWrist.position.y));
-            }
-            if (leftAnkle.score > 0.05) {
-                particles.push(new Particle(leftAnkle.position.x, leftAnkle.position.y));
-            }
-            if (rightAnkle.score > 0.05) {
-                particles.push(new Particle(rightAnkle.position.x, rightAnkle.position.y));
+            // 모든 키포인트에서 파티클 생성
+            for (let j = 0; j < pose.keypoints.length; j++) {
+                const keypoint = pose.keypoints[j];
+                if (keypoint.score > 0.05) {
+                    particles.push(new Particle(keypoint.position.x, keypoint.position.y));
+                }
             }
         }
     }
@@ -57,6 +83,7 @@ function draw() {
         }
     }
 }
+
 
 class Particle {
     constructor(x, y) {
