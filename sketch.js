@@ -65,7 +65,7 @@ class Particle {
         this.acceleration = createVector(0, 0.05);
         this.size = random(1, 5);
         this.alpha = 255;
-        this.fadeSpeed = random(1, 3);
+        this.fadeSpeed = random(1, 5);
 
         this.color = color(random(200, 255), random(100, 200), random(200, 255)); // 핑크색 계열 설정
     }
@@ -73,7 +73,7 @@ class Particle {
     update() {
         this.velocity.add(this.acceleration);
         this.position.add(this.velocity);
-        this.alpha -= this.fadeSpeed * deltaTime / 1000;
+        this.alpha -= this.fadeSpeed * deltaTime / 500;
         this.alpha = constrain(this.alpha, 0, 255);
     }
 
