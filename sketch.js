@@ -111,7 +111,7 @@ class Particle {
     update() {
         // this.velocity.add(this.acceleration);
         this.position.add(this.velocity);
-        this.alpha -= this.fadeSpeed * deltaTime / 50;
+        this.alpha -= this.fadeSpeed * deltaTime / 20;
         this.alpha = constrain(this.alpha, 0, 255);
     }
 
