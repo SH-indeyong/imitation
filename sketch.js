@@ -1,6 +1,6 @@
+// 변수 초기화
 let audio;
 let analyzer;
-let circles = [];
 let video;
 let poseNet;
 let currentPoses = [];
@@ -17,20 +17,23 @@ let isRecording = false;
 let recordedChunks = [];
 let recordedVideo;
 
-
 function preload() {
+    // 오디오 파일 로드
     audio = loadSound("Flying.mp3");
 }
 
 function setup() {
     createCanvas(640, 480);
-    backgroundColor = color(0, 0, 0); // 흰
+    // 웹캠 비디오 캡쳐
     video = createCapture(VIDEO);
     video.hide();
+    // 포즈 감지 모델 설
     poseNet = ml5.poseNet(video, onPoseNetModelReady);
     poseNet.on('pose', onPoseDetected);
-    analyzer = new p5.Amplitude();  // Amplitude 분석기 생성
-    analyzer.setInput(audio);  // 분석기에 오디오 연결
+    // Amplitude 분석기 생성
+    analyzer = new p5.Amplitude();
+    // 분석기에 오디오 연결
+    analyzer.setInput(audio);
 
     // 미디어 레코더 초기화
     let stream = canvas.captureStream();
@@ -42,14 +45,17 @@ function setup() {
 function draw() {
     // background(220);
     if (!trigger) {
+        // 웹캠 비디오를 캔버스에 그림
         image(video, 0, 0, width, height);
     } else {
+        // 녹화된 비디오를 캔버스에 그림
         image(recordedVideo, 0, 0, width, height);
     }
 
     let volume = analyzer.getLevel();
 
     if (!trigger) {
+        // 포즈 감지된 포즈들에 대해 파티클 생성
         for (let i = 0; i < currentPoses.length; i++) {
             const pose = currentPoses[i].pose;
             if (pose.keypoints.length > 0) {
@@ -64,6 +70,7 @@ function draw() {
             }
         }
 
+        // 파티클 업데이트 및 표시
         for (let i = particles.length - 1; i >= 0; i--) {
             let p = particles[i];
             p.update();
@@ -75,6 +82,7 @@ function draw() {
     }
 
     if (!isRecording && millis() > 5000) {
+        // 녹화 시
         startRecording();
         console.log('recording...')
     }
@@ -85,32 +93,35 @@ function onPoseNetModelReady() {
 }
 
 function onPoseDetected(poses) {
+    // 현재 감지된 포즈 정보 업데이트
     currentPoses = poses;
 }
 
 function startRecording() {
-    recordedChunks = []; // 초기화
-    mediaRecorder.start();
+    recordedChunks = [];
+    mediaRecorder.start();              // 녹화 시작
     isRecording = true;
-    console.log('recording...');
-    audio.play(); // Start playing audio when recording starts
-    setTimeout(stopRecording, 20000); // 20초 후 녹음 중지
+    console.log('recording...');        // 녹화 중 상태
+    audio.play();                       // 녹화 시작 시 오디오 재생
+    setTimeout(stopRecording, 20000);   // 20초 후 녹음 중지
 }
 
 function stopRecording() {
-    mediaRecorder.stop(); // 녹화 중지
-    audio.stop();
-    isRecording = false;
+    mediaRecorder.stop();               // 녹화 중지
+    audio.stop();                       // 오디오 재생 중지
+    isRecording = false;                // 녹화 중지 상태
     console.log('recording stop');
 }
 
 function saveRecording(event) {
     if (event.data.size > 0) {
+        // 녹화된 데이터 청크 저장
         recordedChunks.push(event.data);
     }
 }
 
 function displayRecordedVideo() {
+    // Blob 객체 생성
     let blob = new Blob(recordedChunks, { type: 'video/webm' });
     let url = URL.createObjectURL(blob);
 
@@ -125,9 +136,9 @@ function displayRecordedVideo() {
 
 class Particle {
     constructor(x, y, volume) {
-        this.position = createVector(x, y);
-        this.velocity = createVector(random(-1, 1), random(-1, 1));
-        this.size = map(volume, 0, 1, 1, 10); // 음량에 따라 크기 변경
+        this.position = createVector(x, y);                             // 파티클의 위치 벡터 설정
+        this.velocity = createVector(random(-1, 1), random(-1, 1));     // 파티클의 속도 벡터 설정
+        this.size = map(volume, 0, 1, 1, 10);                           // 음량에 따라 크기 변경
         this.alpha = 255;
         this.fadeSpeed = random(1, 5);
 
@@ -142,6 +153,7 @@ class Particle {
     }
 
     update() {
+        // 파티클 위치 업데이트
         this.position.add(this.velocity);
         this.alpha -= this.fadeSpeed * deltaTime / 20;
         this.alpha = constrain(this.alpha, 0, 255);
