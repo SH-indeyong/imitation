@@ -10,8 +10,13 @@ const baseColors = [
     [244, 227, 219], [239, 154, 154], [237, 230, 197], [237, 230, 197], [230, 130, 230]
 ];
 
-let soundRecorder;
+let trigger = false;
+
+let mediaRecorder;
 let isRecording = false;
+let recordedChunks = [];
+let recordedVideo;
+
 
 function preload() {
     audio = loadSound("Flying.mp3");
@@ -19,6 +24,7 @@ function preload() {
 
 function setup() {
     createCanvas(640, 480);
+    backgroundColor = color(0, 0, 0); // 흰
     video = createCapture(VIDEO);
     video.hide();
     poseNet = ml5.poseNet(video, onPoseNetModelReady);
@@ -26,49 +32,49 @@ function setup() {
     analyzer = new p5.Amplitude();  // Amplitude 분석기 생성
     analyzer.setInput(audio);  // 분석기에 오디오 연결
 
-    // Initiahe media recorder
-    soundRecorder = new p5.SoundRecorder();
-    soundRecorder.setInput(audio);
-
-    recordedSound = new p5.SoundFile(); // 녹음된 오디오를 저장할 변수 초기화
-
-    // audio.loop();  // 오디오 루프 재생
-    //   circleSize = 10;
-
-    //   for (let i = 0; i < 5; i++) {
-    //     circles.push({ x: random(width), y: random(height), size: 10 });
-    //   }
+    // 미디어 레코더 초기화
+    let stream = canvas.captureStream();
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = saveRecording;
+    mediaRecorder.onstop = displayRecordedVideo;
 }
 
 function draw() {
-    // background(220); 
-    image(video, 0, 0, width, height);
+    // background(220);
+    if (!trigger) {
+        image(video, 0, 0, width, height);
+    } else {
+        image(recordedVideo, 0, 0, width, height);
+    }
 
     let volume = analyzer.getLevel();
 
-    for (let i = 0; i < currentPoses.length; i++) {
-        const pose = currentPoses[i].pose;
-        if (pose.keypoints.length > 0) {
-            // 모든 키포인트에서 파티클 생성
-            for (let j = 3; j < pose.keypoints.length; j++) {
-                const keypoint = pose.keypoints[j];
-                if (keypoint.score > 0.05) {
-                    particles.push(new Particle(keypoint.position.x, keypoint.position.y, volume));
+    if (!trigger) {
+        for (let i = 0; i < currentPoses.length; i++) {
+            const pose = currentPoses[i].pose;
+            if (pose.keypoints.length > 0) {
+                // leftWrist, rightWrist, leftAnkle, rightAnkle 키포인트만 사용
+                const keypointNames = ['leftWrist', 'rightWrist', 'leftAnkle', 'rightAnkle'];
+                for (let j = 0; j < pose.keypoints.length; j++) {
+                    const keypoint = pose.keypoints[j];
+                    if (keypointNames.includes(keypoint.part) && keypoint.score > 0.05) {
+                        particles.push(new Particle(keypoint.position.x, keypoint.position.y, volume));
+                    }
                 }
+            }
+        }
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+            let p = particles[i];
+            p.update();
+            p.display();
+            if (p.isFaded()) {
+                particles.splice(i, 1);
             }
         }
     }
 
-    for (let i = particles.length - 1; i >= 0; i--) {
-        let p = particles[i];
-        p.update();
-        p.display();
-        if (p.isFaded()) {
-            particles.splice(i, 1);
-        }
-    }
-
-    if (!isRecording && millis() > 5000) { // Start recording after 5s
+    if (!isRecording && millis() > 5000) {
         startRecording();
         console.log('recording...')
     }
@@ -83,20 +89,38 @@ function onPoseDetected(poses) {
 }
 
 function startRecording() {
-    soundRecorder.record(recordedSound, 5); // 5초 동안 녹음 (원하는 시간으로 변경 가능)
+    recordedChunks = []; // 초기화
+    mediaRecorder.start();
     isRecording = true;
+    console.log('recording...');
     audio.play(); // Start playing audio when recording starts
+    setTimeout(stopRecording, 20000); // 20초 후 녹음 중지
 }
 
-function saveRecording(blob) {
-    // Automatically stop recording after 1 minute
-    if (millis() > 30000) { // Stop recording after 30s
-        soundRecorder.stop();
-        isRecording = false;
-        audio.stop(); // Stop audio when recording stops
+function stopRecording() {
+    mediaRecorder.stop(); // 녹화 중지
+    audio.stop();
+    isRecording = false;
+    console.log('recording stop');
+}
+
+function saveRecording(event) {
+    if (event.data.size > 0) {
+        recordedChunks.push(event.data);
     }
-    save(blob, 'recorded_video.webm');
-    console.log('video save')
+}
+
+function displayRecordedVideo() {
+    let blob = new Blob(recordedChunks, { type: 'video/webm' });
+    let url = URL.createObjectURL(blob);
+
+    trigger = true;
+    console.log(trigger);
+
+    recordedVideo = createVideo(url);
+    recordedVideo.position(10, 10);
+    recordedVideo.size(640, 480);
+    recordedVideo.loop(); // 자동으로 비디오 재생
 }
 
 class Particle {
