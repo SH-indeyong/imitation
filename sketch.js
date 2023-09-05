@@ -27,9 +27,10 @@ function setup() {
     // 웹캠 비디오 캡쳐
     video = createCapture(VIDEO);
     video.hide();
-    // 포즈 감지 모델 설
+    // 포즈 감지 모델 설정
     poseNet = ml5.poseNet(video, onPoseNetModelReady);
     poseNet.on('pose', onPoseDetected);
+
     // Amplitude 분석기 생성
     analyzer = new p5.Amplitude();
     // 분석기에 오디오 연결
@@ -43,6 +44,8 @@ function setup() {
 }
 
 function draw() {
+    translate(width, 0);
+    scale(-1, 1);
     // background(220);
     if (!trigger) {
         // 웹캠 비디오를 캔버스에 그림
@@ -82,7 +85,7 @@ function draw() {
     }
 
     if (!isRecording && millis() > 5000) {
-        // 녹화 시
+        // 녹화 시작
         startRecording();
         console.log('recording...')
     }
